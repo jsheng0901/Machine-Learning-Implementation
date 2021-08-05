@@ -2,6 +2,7 @@ import numpy as np
 from utils.data_manipulation import divide_matrix_on_feature
 from utils.data_operation import calculate_variance, calculate_entropy, gini
 
+
 class DecisionNode():
     """Class that represents a decision node or leaf in the decision tree
     Parameters:
@@ -231,6 +232,7 @@ class RegressionTree(DecisionTree):
 
 class ClassificationTree(DecisionTree):
     """build classification tree, this is sub class of decision tree object"""
+
     def _calculate_information_gain(self, y, y1, y2):
         """
         ID3 classification tree try to minimum entropy on each sub tree, after feature A threshold applied split
@@ -281,6 +283,6 @@ class ClassificationTree(DecisionTree):
 
     def fit(self, X, y):
         """fit decision tree will call fit method in super class"""
-        self._impurity_calculation = self._calculate_information_gain
+        self._impurity_calculation = self._calculate_gini_index_gain
         self._leaf_value_calculation = self._majority_vote
         super(RegressionTree, self).fit(X, y)

@@ -46,3 +46,9 @@ def gini(y):
     for i in results.keys():
         imp += (results[i] / length) ** 2
     return 1 - imp
+
+
+def sigmoid (x):
+    """calculate sigmoid  value, known as 1 / (1 + exp(-x)"""
+
+    return 1 / (1 + np.exp(-x))

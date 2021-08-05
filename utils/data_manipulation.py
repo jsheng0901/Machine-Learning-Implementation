@@ -1,6 +1,15 @@
 import numpy as np
 
 
+def to_categorical(x, n_col=None):
+    """ One-hot encoding of nominal values """
+    if not n_col:
+        n_col = np.amax(x) + 1
+    one_hot = np.zeros((x.shape[0], n_col))
+    one_hot[np.arange(x.shape[0]), x] = 1
+    return one_hot
+
+
 def divide_matrix_on_feature(X, feature_i, threshold):
     """
     Divide dataset based on if sample value on feature index is larger than
