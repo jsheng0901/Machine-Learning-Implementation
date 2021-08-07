@@ -30,7 +30,7 @@ class SquareLoss(Loss):
 
 class SotfMaxLoss(Loss):
     """sub class of loss object"""
-
+    # TODO: need finish softmax loss and gradient
     def __init__(self):
         pass
 
