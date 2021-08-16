@@ -25,10 +25,11 @@ class GradientBoosting(object):
         The maximum depth of a tree.
     regression: boolean
         True or false depending on if we're doing regression or classification.
+    loss: loss object
+        Loss function object to calculate negative gradient when fit residue
     """
 
-    def __init__(self, n_estimators, learning_rate, min_samples_split,
-                 min_impurity, max_depth, regression, loss):
+    def __init__(self, n_estimators, learning_rate, min_samples_split, min_impurity, max_depth, regression, loss):
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.min_samples_split = min_samples_split
@@ -71,7 +72,7 @@ class GradientBoosting(object):
             # calculate negative gradient
             neg_gradient = self.loss.gradient(y, y_pred)
             self.trees[i].fit(X, neg_gradient)
-            # update new y_pred with previous value + new tree predict negative gradient
+            # update new y_pred with previous value + new tree predict negative gradient * learning rate
             y_pred += np.multiply(self.trees[i].predict(X), self.learning_rate)
 
     def predict(self, X):

@@ -24,13 +24,17 @@ class SquareLoss(Loss):
         return 0.5 * np.power((y - y_pred), 2)
 
     def gradient(self, y, y_pred):
-        """negative gradient for gradient boosting decision tree"""
+        """gradient for gradient boosting decision tree and XGBoost"""
         return -(y - y_pred)
+
+    def hess(self, y, y_pred):
+        """second order derivative of taylor expansion"""
+        return np.ones_like(y)
 
 
 class SotfMaxLoss(Loss):
     """sub class of loss object"""
-    # TODO: need finish softmax loss and gradient
+    # TODO: need finish softmax loss and gradient`
     def __init__(self):
         pass
 
@@ -52,7 +56,7 @@ class CrossEntropy(Loss):
     def loss(self, y, y_pred):
         """according to sklearn, y_pred is raw prediction have to applied sigmoid  first to y_pred"""
         # Avoid division by zero
-        # p = np.clip(p, 1e-15, 1 - 1e-15)
+        y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
         p = sigmoid(y_pred)
         return - y * np.log(p) - (1 - y) * np.log(1 - p)
 
@@ -71,5 +75,10 @@ class CrossEntropy(Loss):
         # Avoid division by zero
         # p = np.clip(p, 1e-15, 1 - 1e-15)
         # return - (y / p) + (1 - y) / (1 - p)
-
+        # this is negative gradient of F(x) --> y_pred
         return y - sigmoid(y_pred)
+
+    def hess(self, y, y_pred):
+        """second order derivative of taylor expansion"""
+        p = sigmoid(y_pred)
+        return p * (1 - p)
