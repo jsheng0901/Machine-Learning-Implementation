@@ -65,6 +65,7 @@ class CrossEntropy(Loss):
 
     def gradient(self, y, y_pred):
         """
+        this only for gradient boosting regression, since we do gradient of predict value not parameters
         according to sklearn
         https://github.com/scikit-learn/scikit-learn/blob/2beed55847ee70d363bdbfe14ee4401438fba057/sklearn/ensemble/_gb_losses.py#L596
         derive of raw prediction F(x) The raw predictions (i.e. values from the tree leaves) of the
