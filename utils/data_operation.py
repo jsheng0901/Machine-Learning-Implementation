@@ -11,6 +11,16 @@ def calculate_variance(X):
     return variance
 
 
+def calculate_covariance_matrix(X, Y=None):
+    """ Calculate the covariance matrix for the dataset X """
+    if Y is None:
+        Y = X
+    n_samples = np.shape(X)[0]
+    covariance_matrix = (1 / (n_samples - 1)) * (X - X.mean(axis=0)).T.dot(Y - Y.mean(axis=0))
+
+    return np.array(covariance_matrix, dtype=float)
+
+
 def calculate_entropy(y):
     """ Calculate the entropy of label array y """
     log2 = lambda x: math.log(x) / math.log(2)
@@ -48,7 +58,7 @@ def gini(y):
     return 1 - imp
 
 
-def sigmoid (x):
+def sigmoid(x):
     """calculate sigmoid  value, known as 1 / (1 + exp(-x)"""
 
     return 1 / (1 + np.exp(-x))
