@@ -251,7 +251,7 @@ class Tsne:
             # estimate gradient with respect to current y
             y_gradient = self.get_gradient(p_join_prob, q_join_prob, y, y_distance_matrix)
 
-            # update y with gradient and momentum 
+            # update y with gradient and momentum
             # y_t = y_t-1 - rate * y_gradient + momentum * (y_t-1 - y_t-2) t mean number of iter loop
             y = y - self.learning_rate * y_gradient + self.momentum * (y_m1 - y_m2)
             # update previous y value
@@ -259,7 +259,3 @@ class Tsne:
             y_m1 = y.copy()
 
         return y
-
-
-
-
