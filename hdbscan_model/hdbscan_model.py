@@ -501,10 +501,14 @@ class HDBSCAN:
 
 # test
 # from sklearn.datasets import make_blobs
-#
+# import hdbscan
 # data, _ = make_blobs(5, 2)
 #
 # clusterer = HDBSCAN(min_cluster_size=3)
 # cluster_labels = clusterer.fit(data)
+# data, _ = make_blobs(1000, 100)
+#
+# clusterer = hdbscan.HDBSCAN(min_cluster_size=10)
+# cluster_labels = clusterer.fit_predict(data)
 
 
