@@ -1,9 +1,9 @@
 
 ### 基本原理
 参考链接：
-- https://blog.csdn.net/ACM_hades/article/details/90752746
-- https://towardsdatascience.com/dbscan-clustering-explained-97556a2ad556
-- https://scikit-learn.org/stable/modules/clustering.html
+- [中文链接解释](https://blog.csdn.net/ACM_hades/article/details/90752746)
+- [英文链接解释](https://towardsdatascience.com/dbscan-clustering-explained-97556a2ad556)
+- [聚类算法对比](https://scikit-learn.org/stable/modules/clustering.html)
 ### 优点
 - 对于任意形状大小的数据集都可以进行clustering。
 - 可以在cluster的时候同时发现noise点，并且相对于KMeans，本身对noise点并不敏感，因为clustering的过程是从local到global。
