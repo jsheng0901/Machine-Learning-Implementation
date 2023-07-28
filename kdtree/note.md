@@ -1,7 +1,7 @@
 
 ### 基本原理
 参考链接：
-- [中文链接解释1](https://zhuanlan.zhihu.com/p/45346117)
+- [中文链接解释](https://zhuanlan.zhihu.com/p/45346117)
 - [中文链接解释及参考复现代码](https://leileiluoluo.com/posts/kdtree-algorithm-and-implementation.html)
 - [中文链接图文并茂解释及基础数学知识](https://zhuanlan.zhihu.com/p/22557068)
 - [英文解释及KNN相对知识点](https://www.cs.cornell.edu/courses/cs4780/2018fa/lectures/lecturenote16.html)
