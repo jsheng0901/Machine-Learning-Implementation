@@ -51,7 +51,7 @@ class Tsne:
         # check if it's calculate p_j_i inside binary search sigma method
         # or after find the best sigma inside get_p_join method
         if zero_index is None:
-            # we fill all diagonal as 0 since p_i_i = 0
+            # we fill all diagonal as 0 since p_i_i = 0, when zero index is None then exp_x is [n_sample, n_sample]
             np.fill_diagonal(exp_x, 0)
         else:
             exp_x[:, zero_index] = 0
@@ -154,7 +154,8 @@ class Tsne:
         """
         Given a data matrix X, give the joint probability of gaussian distribution in high dimension
         In t-sne we define joint probability p_ij = (p_i_j + p_j+i) / (2 * n)
-        p_i_j refer conditional probability P(i|j), n is number of sample size
+        p_i_j refer conditional probability P(i|j) -> when j is core point the probability of i is j's neighbor,
+        n is number of sample size
         Args:
             X: array type dataset (n_samples, n_features)
         Returns:
@@ -183,21 +184,21 @@ class Tsne:
             q_join_prob: (n_samples, n_samples)
                 matrix with q_ij join probability
             distance_matrix_inverse: (n_samples, n_samples)
-                inverse of y distance matrix pow((1 + ||yi - yj||), -1) this part
+                inverse of y distance matrix, which is pow((1 + ||yi - yj||), -1) this part
         """
         # get euclidian distance matrix for each point
         distance_matrix = pairwise_distances(Y)
         distance_matrix_inverse = np.power(1 + distance_matrix, -1)
         # fill all diagonal as 0 since q_i_i = 0 same as p_i_i
         np.fill_diagonal(distance_matrix_inverse, 0)
-        q_join_prob = distance_matrix_inverse / np.sum(distance_matrix_inverse)
+        q_join_prob = distance_matrix_inverse / np.sum(distance_matrix_inverse, axis=1)
 
         return q_join_prob, distance_matrix_inverse
 
     def get_gradient(self, p, q, y, distances):
         """
         get t-sne gradient with respect to current y. t-sne use gradient descent,
-        in paper actually use stochastic gradient descent, here for easy we update all y point gradient
+        in paper actually use stochastic gradient descent, here for easy we update all y point
         gradient = 4 * sum((p_ij - q_ij) * pow((1 + ||yi - yj||), -1) * (yi - yj), j)
         Args:
             p: array type (n_samples, n_samples)
@@ -207,9 +208,9 @@ class Tsne:
             y: array type (n_samples, n_components)
                 current low dimension y value matrix
             distances: array type (n_samples, n_samples)
-                current low dimension y distance matrix
+                current low dimension y distance matrix inverse this part: pow((1 + ||yi - yj||), -1), get from q_join
         Returns:
-            y_gradient: array type (n_samples, n_features)
+            y_gradient: array type (n_samples, n_components)
                 current low dimension each y point gradient matrix
         """
         # get p, q difference (n_samples, n_samples)
@@ -248,7 +249,7 @@ class Tsne:
         for i in range(self.n_iter):
             # get low dimension join distribution matrix q_ij and y distance_matrix
             q_join_prob, y_distance_matrix = self.get_q_join(y)
-            # estimate gradient with respect to current y
+            # estimate gradient with respect to current each point in y
             y_gradient = self.get_gradient(p_join_prob, q_join_prob, y, y_distance_matrix)
 
             # update y with gradient and momentum
