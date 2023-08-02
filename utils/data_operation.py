@@ -71,3 +71,13 @@ def euclidean_distance(x1, x2):
     for i in range(len(x1)):
         distance += math.pow((x1[i] - x2[i]), 2)
     return math.sqrt(distance)
+
+
+def standardize_data(x):
+    """standardize data base on mean and std"""
+    numerator = x - np.mean(x, axis=0)
+    denominator = np.std(x, axis=0)
+    # add a tiny constant for avoid 0 std
+    denominator += 1e-8
+
+    return numerator / denominator
