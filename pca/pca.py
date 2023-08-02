@@ -1,6 +1,6 @@
 import numpy as np
+from utils.data_operation import standardize_data
 from scipy.linalg import svd
-import logging
 
 
 class PCA:
@@ -20,20 +20,27 @@ class PCA:
         self.solver = solver
         self.n_components = n_components
         self.components = None          # eigenvectors after pick corresponding top n_components eigenvalues
-        self.mean = None                # mean of decompose x
 
     def decompose(self, X):
-        """decompose X to get eigenvalues, eigenvectors"""
+        """
+        Decompose X to get eigenvalues, eigenvectors from this formular X^T * X * W = lambda * W
+        Args:
+            X: array type dataset (n_samples, n_features)
+
+        Returns:
+            None, generate components which is W from above formular as eigenvectors
+            W -> (n_features, n_components)
+        """
 
         # Mean centering first
-        X = X.copy()
-        X -= self.mean
+        X = standardize_data(X)
 
         if self.solver == "svd":
-            _, eigenvalues, eigenvectors = svd(X, full_matrices=True)
+            _, eigenvalues, eigenvectors = svd(X)
         elif self.solver == "eigen":
-            # get covariance matrix first
+            # get covariance matrix first cov -> [n_feature, n_feature]
             covariance_matrix = np.cov(X.T)
+            # eigenvectors -> [n_feature, n_feature], eigenvectors -> [n_feature,]
             eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
 
         # sort eigenvalues and pick top n_component
@@ -42,17 +49,35 @@ class PCA:
         self.components = eigenvectors[:, :self.n_components]
 
         # get variance ratio based on top n_components
-        eigenvalues_squared = sorted(eigenvalues)[::-1] ** 2
+        eigenvalues_squared = np.power(sorted(eigenvalues, reverse=True), 2)
         variance_ratio = eigenvalues_squared / eigenvalues_squared.sum()
-        logging.info("Explained variance ratio: %s" % (variance_ratio[0: self.n_components]))
+        print("Explained variance ratio: %s" % (variance_ratio[0: self.n_components]))
 
     def fit(self, X):
-        """build PCA"""
-        self.mean = np.mean(X, axis=0)
+        """
+        Build PCA components
+        Args:
+            X: array type dataset (n_samples, n_features)
+
+        Returns: None
+        """
         self.decompose(X)
 
     def transform(self, X):
-        """transfer original x to new dimension axis x, x can be any size only dimension have to same as fit x"""
-        X = X.copy()
-        X -= self.mean
-        return np.dot(X, self.components)
+        """
+        Transfer original x to new dimension axis x, x can be any size only dimension have to same as fit x
+        Args:
+            X: array type dataset (n_samples, n_features)
+
+        Returns:
+            X_trans: array type dataset (n_samples, n_components), after applied pca dimension reduction
+        """
+        # Mean centering first
+        X = standardize_data(X)
+        # check if W already create or not
+        if self.components is None:
+            self.fit(X)
+
+        X_trans = np.dot(X, self.components)
+
+        return X_trans
