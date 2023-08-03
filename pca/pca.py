@@ -21,11 +21,11 @@ class PCA:
         self.n_components = n_components
         self.components = None          # eigenvectors after pick corresponding top n_components eigenvalues
 
-    def decompose(self, X):
+    def decompose(self, x):
         """
         Decompose X to get eigenvalues, eigenvectors from this formular X^T * X * W = lambda * W
         Args:
-            X: array type dataset (n_samples, n_features)
+            x: array type dataset (n_samples, n_features)
 
         Returns:
             None, generate components which is W from above formular as eigenvectors
@@ -33,13 +33,14 @@ class PCA:
         """
 
         # Mean centering first
-        X = standardize_data(X)
+        x = standardize_data(x)
 
         if self.solver == "svd":
-            _, eigenvalues, eigenvectors = svd(X)
-        elif self.solver == "eigen":
+            _, eigenvalues, eigenvectors = svd(x)
+        else:
+            # eigen method
             # get covariance matrix first cov -> [n_feature, n_feature]
-            covariance_matrix = np.cov(X.T)
+            covariance_matrix = np.cov(x.T)
             # eigenvectors -> [n_feature, n_feature], eigenvectors -> [n_feature,]
             eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
 
@@ -53,31 +54,31 @@ class PCA:
         variance_ratio = eigenvalues_squared / eigenvalues_squared.sum()
         print("Explained variance ratio: %s" % (variance_ratio[0: self.n_components]))
 
-    def fit(self, X):
+    def fit(self, x):
         """
         Build PCA components
         Args:
-            X: array type dataset (n_samples, n_features)
+            x: array type dataset (n_samples, n_features)
 
         Returns: None
         """
-        self.decompose(X)
+        self.decompose(x)
 
-    def transform(self, X):
+    def transform(self, x):
         """
         Transfer original x to new dimension axis x, x can be any size only dimension have to same as fit x
         Args:
-            X: array type dataset (n_samples, n_features)
+            x: array type dataset (n_samples, n_features)
 
         Returns:
             X_trans: array type dataset (n_samples, n_components), after applied pca dimension reduction
         """
         # Mean centering first
-        X = standardize_data(X)
+        x = standardize_data(x)
         # check if W already create or not
         if self.components is None:
-            self.fit(X)
+            self.fit(x)
 
-        X_trans = np.dot(X, self.components)
+        x_trans = np.dot(x, self.components)
 
-        return X_trans
+        return x_trans
