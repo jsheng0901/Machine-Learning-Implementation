@@ -6,7 +6,7 @@
 - [中文基本算法理解和应用](https://blog.csdn.net/weixin_45142381/article/details/127150708)
 - [中文原理讲解](https://zhuanlan.zhihu.com/p/37777074/)
 - [中文原理分析推导](https://zhuanlan.zhihu.com/p/260186662)
-- [英文链接图文解释](1https://medium.com/@dareyadewumi650/understanding-the-role-of-eigenvectors-and-eigenvalues-in-pca-dimensionality-reduction-10186dad0c5c)
+- [英文链接图文解释](https://medium.com/@dareyadewumi650/understanding-the-role-of-eigenvectors-and-eigenvalues-in-pca-dimensionality-reduction-10186dad0c5c)
 - [sklearn中相关应用文档](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
 - [方差与信息量直接的关系](https://www.zhihu.com/question/36481348)
 ### 优点
