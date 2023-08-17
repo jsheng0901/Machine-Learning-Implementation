@@ -23,7 +23,7 @@
   - penalty，{‘l1’, ‘l2’, ‘elasticnet’, None}, default=’l2’，正则化的类型，一般选用l2。
   - C，正则化强度的倒数，必须是正数。与SVM里面一样，值越小说明penalty越大。
 - 损失函数解释
-  - 损失函数由MLE推导出来，cross-entropy推导出来的也是一样。![loss function](/pics/logistic_regression_loss_function.jpg)。
+  - 损失函数由MLE推导出来，cross-entropy推导出来的也是一样。![loss function](/pics/logistic_regression_loss_function.jpg)
 - 正则化解释
   - l1，加上L1范数容易得到稀疏解，LASSO回归，相当于为模型添加了这样一个先验知识：w服从零均值拉普拉斯分布。
   - l2，范数的平方，加上L2正则相比于L1正则来说，得到的解比较平滑（不是稀疏），但是同样能够保证解中接近于0（但不是等于0，所以相对平滑的维度比较多，降低模型的复杂度。Ridge回归，相当于为模型添加了这样一个先验知识：w 服从零均值正态分布。
