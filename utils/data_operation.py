@@ -36,6 +36,9 @@ def calculate_entropy(y):
 def calculate_unique_value(y):
     """calculate unique value frequency in x array"""
     # return results {type1:type1_count, type2:type2_count,  ... typeN:typeN_count}
+    # check if shape of y is more than one
+    if len(y.shape) > 1:
+        y = y.reshape(-1)
 
     results = {}
     for data in y:
