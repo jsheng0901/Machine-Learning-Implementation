@@ -1,10 +1,13 @@
+from abc import abstractmethod, ABC
+
 import numpy as np
 from utils.data_manipulation import divide_matrix_on_feature
 from utils.data_operation import calculate_variance, calculate_entropy, gini
 
 
-class DecisionNode():
-    """Class that represents a decision node or leaf in the decision tree
+class DecisionNode:
+    """
+    Class that represents a decision node or leaf in the decision tree
     Parameters:
     -----------
     feature_i: int
@@ -25,13 +28,14 @@ class DecisionNode():
         self.feature_i = feature_i  # Index for the feature that is tested
         self.threshold = threshold  # Threshold value for feature
         self.value = value  # Value if the node is a leaf in the tree
-        self.true_branch = true_branch  # 'Left' subtree
-        self.false_branch = false_branch  # 'Right' subtree
+        self.true_branch = true_branch  # Left subtree
+        self.false_branch = false_branch  # Right subtree
 
 
 # This is Super class of RegressionTree and ClassificationTree
-class DecisionTree(object):
-    """Super class of RegressionTree and ClassificationTree.
+class DecisionTree:
+    """
+    Super class of RegressionTree and ClassificationTree.
     Parameters:
     -----------
     min_samples_split: int
@@ -40,132 +44,179 @@ class DecisionTree(object):
         The minimum impurity required to split the tree further.
     max_depth: int
         The maximum depth of a tree.
-    loss: function
-        Loss function that is used for Gradient Boosting models to calculate impurity.
     """
 
-    def __init__(self, min_samples_split=2, min_impurity=1e-7,
-                 max_depth=float("inf"), loss=None):
-        self.root = None  # Root node in dec. tree
+    def __init__(self, min_samples_split=2, min_impurity=1e-7, max_depth=float("inf")):
+        self.root = None  # Root node in decision tree
+
         # Minimum n of samples to justify split
         self.min_samples_split = min_samples_split
         # The minimum impurity to justify split
         self.min_impurity = min_impurity
         # The maximum depth to grow the tree to
         self.max_depth = max_depth
-        # Function to calculate impurity (classification: info gain, gini, regression: variance reduction.)
-        self._impurity_calculation = None
-        # Function to determine prediction of y at leaf (classification: majority vote, regression: mean)
-        self._leaf_value_calculation = None
         # If y is one-hot encoded (multi-dim) or not (one-dim)
         self.one_dim = None
-        # If Gradient Boost, use loss function to calculate negative gradient (residues)
-        self.loss = loss
 
-    def _build_tree(self, X, y, current_depth=0):
+    @abstractmethod
+    def _impurity_calculation(self, y, y1, y2):
         """
-        Recursive method which builds the decision tree and splits X and y together
-        on the feature of X which (based on impurity) best separates the data
+        Function to calculate impurity (classification: info gain, gini, regression: variance reduction.)
+        Args:
+            y: array type dataset, original y value before split
+            y1: array type dataset, left true branch y value
+            y2: array type dataset, right false branch
 
-        X: np.array
-        y: np.array or list have to be same length as X
-        current_depth: int, calculate current depth of tree to meet max_depth hyper-parameters
+        Returns:
+            Customized impurity output
+        """
+        pass
+
+    @abstractmethod
+    def _leaf_value_calculation(self, y):
+        """
+        Function to determine prediction of y at leaf (classification: majority vote, regression: mean)
+        Args:
+            y: array type dataset, leaf node region y
+
+        Returns:
+            Customized leaf value output
+        """
+        pass
+
+    def _loss(self):
+        """
+        Loss function that is used for Gradient Boosting models to calculate impurity and negative gradient (residues)
+        Returns:
+            Customized loss (residues) output
+        """
+        pass
+
+    def _build_tree(self, x, y, current_depth=0):
+        """
+        Recursive method which builds the decision tree and splits x and y together
+        on the feature of x which (based on impurity) best separates the data. Check all user
+        setting hyperparameters before we go into recursive split dataset.
+        Args:
+            x: array type dataset (n_samples, n_features)
+            y: array type dataset (n_samples)
+            current_depth: int, calculate current depth of tree to meet max_depth hyperparameters
+
+        Returns:
+            cur_node: DecisionTree object, after build decision tree root node
         """
 
-        best_criteria = None  # Feature index and threshold to store in each step
-        best_sets = None  # Subsets of the data to store in each step
+        best_criteria = None  # feature index and threshold to store in each step, initial as None at each recursive
+        best_sets = None  # subsets of the data to store in each step, initial as None at each recursive
 
-        # Check if expansion of y is needed for concat
+        # check if expansion of y is needed for concat
         if len(np.shape(y)) == 1:
             y = np.expand_dims(y, axis=1)
 
-        # Add y as last column of X, y have to be last column otherwise will influence feature_i index when split
-        Xy = np.concatenate((X, y), axis=1)
+        n_samples, n_features = np.shape(x)
 
-        n_samples, n_features = np.shape(X)
-        # when meet user set criteria then keep split tree node, this is known as pre-pruning
-        if n_samples >= self.min_samples_split and current_depth <= self.max_depth:
-            # record which feature get largest impurity
-            largest_impurity = 0
-            # calculate the impurity (gini, variance reduction, information gain) for each feature
-            for feature_i in range(n_features):
-                # get all value of feature_i
-                feature_values = np.expend_dims(X[:, feature_i], axis=1)
-                # get unique value for finding which split point is best (binary split in CART)
-                # no matter it's regression tree or classification tree, use same way to split feature
-                # numerical: discrete => find unique value => find optimal split point
-                # categorical:  find unique value => find optimal split point
-                # TODO: need change numerical feature to discrete into few group first then find unique value
-                # this will speed up finding optimal split point process
-                unique_values = np.unique(feature_values)
+        # add y as last column of x, y have to be last column otherwise will influence feature_i index when split
+        xy = np.concatenate((x, y), axis=1)
+        # record which feature get the largest impurity, initial as 0
+        largest_impurity = 0
+        # calculate the impurity (gini, variance reduction, information gain) for each feature
+        for feature_i in range(n_features):
+            # get all value of feature_i
+            # feature_values = np.expand_dims(x[:, feature_i], axis=1)
+            feature_values = x[:, feature_i]
+            # get unique value for finding which split point is best (binary split in CART)
+            # no matter it's regression tree or classification tree, use same way to split feature
+            # numerical: discrete => group value => find unique group value => find optimal split point
+            # categorical:  find unique value => find optimal split point
+            # TODO: need change numerical feature to discrete into few group first then find unique value
+            # this will speed up finding optimal split point process
+            unique_values = np.unique(feature_values)
 
-                # Iterate through all unique values of feature column i and
-                # calculate the impurity
-                for threshold in unique_values:
-                    # Divide X and y depending on if the feature value of X at index feature_i
-                    # meets the threshold
-                    Xy1, Xy2 = divide_matrix_on_feature(Xy, feature_i, threshold)
+            # Iterate through all unique values of feature column i and
+            # calculate the impurity
+            for threshold in unique_values:
+                # divide x and y depending on if the feature value of X at index feature_i
+                # meets the threshold
+                xy1, xy2 = divide_matrix_on_feature(xy, feature_i, threshold)
 
-                    if len(Xy1) > 0 and len(Xy2) > 0:
-                        # Select the y values of the two array
-                        y1 = Xy1[:, n_features:]
-                        y2 = Xy2[:, n_features:]
+                if len(xy1) > 0 and len(xy2) > 0:
+                    # select the y values of the two array
+                    y1 = xy1[:, n_features:]
+                    y2 = xy2[:, n_features:]
 
-                        # Calculate impurity
-                        impurity = self._impurity_calculation(y, y1, y2)
+                    # calculate impurity
+                    impurity = self._impurity_calculation(y, y1, y2)
 
-                        # If this threshold resulted in a higher information gain than previously
-                        # recorded save the threshold value and the feature index
-                        if impurity > largest_impurity:
-                            largest_impurity = impurity
-                            best_criteria = {"feature_i": feature_i, "threshold": threshold}
-                            best_sets = {
-                                "leftX": Xy1[:, :n_features],  # X of left subtree
-                                "lefty": Xy1[:, n_features:],  # y of left subtree
-                                "rightX": Xy2[:, :n_features],  # X of right subtree
-                                "righty": Xy2[:, n_features:]  # y of right subtree
-                            }
-            # finish one tree node split and find optimal split feature and threshold for this node
-            # check if largest larger then user setting hyper-parameters, known as pre-pruning
-            if largest_impurity > self.min_impurity:
-                # Build subtrees for the right and left branches
-                cur_node = DecisionNode(feature_i=best_criteria["feature_i"], threshold=best_criteria["threshold"])
-                cur_node.true_branch = self._build_tree(best_sets["leftX"], best_sets["lefty"], current_depth + 1)
-                cur_node.false_branch = self._build_tree(best_sets["rightX"], best_sets["righty"], current_depth + 1)
-                return cur_node
-                # true_branch = self._build_tree(best_sets["leftX"], best_sets["lefty"], current_depth + 1)
-                # false_branch = self._build_tree(best_sets["rightX"], best_sets["righty"], current_depth + 1)
+                    # If this threshold resulted in a higher information gain than previously
+                    # recorded save the threshold value, the feature index and best split left, right x, y dataset
+                    if impurity > largest_impurity:
+                        largest_impurity = impurity
+                        best_criteria = {"feature_i": feature_i, "threshold": threshold}
+                        best_sets = {
+                            "left_x": xy1[:, :n_features],  # x of left subtree
+                            "left_y": xy1[:, n_features:],  # y of left subtree
+                            "right_x": xy2[:, :n_features],  # x of right subtree
+                            "right_y": xy2[:, n_features:]  # y of right subtree
+                        }
 
-                # return DecisionNode(feature_i=best_criteria["feature_i"], threshold=best_criteria["threshold"],
-                #                     true_branch=true_branch, false_branch=false_branch)
-            else:
-                # we meet leaf node and we have to stop recursive
-                # calculate leaf value (majority vote or mean)
-                leaf_value = self._leaf_value_calculation(y)
-                # store leaf value into node
-                return DecisionNode(value=leaf_value)
+        # finish one tree node split and find optimal split feature and threshold for this node
+        # check if impurity larger than user setting hyperparameters, known as pre-pruning
+        # check if left and right subtrees meet user setting hyperparameters
+        # get left and right sample size, if no best sets which means no more split set left right size as 0
+        left_n_samples = best_sets["left_x"].shape[0] if best_sets else 0
+        right_n_samples = best_sets["right_x"].shape[0] if best_sets else 0
+        next_depth = current_depth + 1
+        # must meet all user setting hyperparameters than we will keep split tree
+        if largest_impurity > self.min_impurity and left_n_samples >= self.min_samples_split and \
+                right_n_samples >= self.min_samples_split and next_depth <= self.max_depth:
+            # build current node for the right and left branches root node
+            cur_node = DecisionNode(feature_i=best_criteria["feature_i"], threshold=best_criteria["threshold"])
+            # assign true and false two subtree to current node
+            cur_node.true_branch = self._build_tree(best_sets["left_x"], best_sets["left_y"], next_depth)
+            cur_node.false_branch = self._build_tree(best_sets["right_x"], best_sets["right_y"], next_depth)
+            return cur_node
+        else:
+            # we meet leaf node, and we have to stop recursive split dataset
+            # calculate leaf value (majority vote or mean)
+            leaf_value = self._leaf_value_calculation(y)
+            # store leaf value into node
+            cur_node = DecisionNode(value=leaf_value)
+            return cur_node
 
-    def fit(self, X, y, loss=None):
-        """ Build and train decision tree """
+    def fit(self, x, y):
+        """
+        Build and train decision tree
+        Args:
+            x: array type dataset (n_samples, n_features)
+            y: array type dataset (n_samples)
+
+        Returns:
+            None, build decision tree
+        """
+
         self.one_dim = len(np.shape(y)) == 1
-        self.root = self._build_tree(X, y)
-        self.loss = None
+        self.root = self._build_tree(x, y)
 
     def predict_value(self, x, tree=None):
         """
         Do a recursive search down the tree and make a prediction of the data sample by the
-        value of the leaf that we end up at
+        value of the leaf that we end up at.
+        Args:
+            x: array type dataset (n_samples, n_features) one sample, mush have same ordered of features as fit x
+            tree: DecisionTree node, default is None which know as traversal from root.
 
-        x: one sample from test, mush have same order of features as fit X
-        tree: Decision Tree node
+        Returns:
+            left_value: float, final predict output value.
         """
+
         # initial set
         if tree is None:
             tree = self.root
 
         # If we have a value, which means we already meet leaf node, stop recursive, return value as the prediction
         if tree.value is not None:
-            return tree.value
+            left_value = tree.value
+            return left_value
 
         # Choose the feature that we will test
         feature_value = x[tree.feature_i]
@@ -183,26 +234,43 @@ class DecisionTree(object):
             else:
                 branch = tree.false_branch
 
-        return self.predict_value(x, branch)
+        left_value = self.predict_value(x, branch)
 
-    def predict(self, X):
-        """ Classify samples one by one and return the set of labels """
-        y_pred = [self.predict_value(sample) for sample in X]
+        return left_value
+
+    def predict(self, x):
+        """
+        Classify samples one by one and return the set of labels
+        Args:
+            x: array type dataset (n_samples, n_features)
+
+        Returns:
+            y_pred: array type dataset (n_samples), final predict value
+        """
+
+        y_pred = [self.predict_value(sample) for sample in x]
+
         return y_pred
 
 
-class RegressionTree(DecisionTree):
-    """build regression tree, this is sub class of decision tree object"""
+class RegressionTree(DecisionTree, ABC):
+    """
+    Build regression tree, this is subclass of decision tree object
+    """
 
-    def _calculate_variance_reduction(self, y, y1, y2):
+    def _impurity_calculation(self, y, y1, y2):
         """
-        CART regression tree try to minimum variance on each sub tree, after feature A threshold applied split
+        CART regression tree try to minimum variance on each subtree, after feature A threshold applied split
         CART take most variance reduction feature threshold as best feature threshold
+        Args:
+            y: array type dataset, original y value before split
+            y1: array type dataset, left true branch y value
+            y2: array type dataset, right false branch
 
-        y: np.array, original y value before split
-        y1: np.array, left true branch y value
-        y2: np.array, right false branch
+        Returns:
+            variance_reduction: float, variance reduction for this split
         """
+
         var_tot = calculate_variance(y)
         var_1 = calculate_variance(y1)
         var_2 = calculate_variance(y2)
@@ -213,51 +281,39 @@ class RegressionTree(DecisionTree):
         # we want reduction maximum, which equal minimum this part (frac_1 * var_1 + frac_2 * var_2)
         variance_reduction = var_tot - (frac_1 * var_1 + frac_2 * var_2)
 
-        return sum(variance_reduction)
+        return variance_reduction
 
-    def _mean_of_y(self, y):
+    def _leaf_value_calculation(self, y):
         """
-        calculate mean of array like y for leaf node final value output
-        y: np.array, leaf node region y
+        Calculate mean of array like y for leaf node final value output
+        Args:
+            y: array type dataset, leaf node region y
+
+        Returns:
+            value: float, final predict leaf value
         """
         value = np.mean(y, axis=0)
         return value if len(value) > 1 else value[0]
 
-    def fit(self, X, y):
-        """fit decision tree will call fit method in super class"""
-        self._impurity_calculation = self._calculate_variance_reduction
-        self._leaf_value_calculation = self._mean_of_y
-        super(RegressionTree, self).fit(X, y)
 
+class ClassificationCARTTree(DecisionTree, ABC):
+    """
+    Build classification CART tree, this is subclass of decision tree object
+    """
 
-class ClassificationTree(DecisionTree):
-    """build classification tree, this is sub class of decision tree object"""
-
-    def _calculate_information_gain(self, y, y1, y2):
+    def _impurity_calculation(self, y, y1, y2):
         """
-        ID3 classification tree try to minimum entropy on each sub tree, after feature A threshold applied split
-        ID3 take most information gain feature threshold as best feature threshold
-
-        y: np.array, original y value before split
-        y1: np.array, left true branch y value
-        y2: np.array, right false branch
-        """
-        # Calculate information gain
-        p = len(y1) / len(y)
-        entropy = calculate_entropy(y)
-        info_gain = entropy - p * calculate_entropy(y1) - (1 - p) * calculate_entropy(y2)
-
-        return info_gain
-
-    def _calculate_gini_index_gain(self, y, y1, y2):
-        """
-        CART classification tree try to minimum gini index on each sub tree, after feature A threshold applied split
+        CART classification tree try to minimum gini index on each sub ree, after feature A threshold applied split
         CART take most gini index gain feature threshold as best feature threshold
+        Args:
+            y: array type dataset, original y value before split
+            y1: array type dataset, left true branch y value
+            y2: array type dataset, right false branch
 
-        y: np.array, original y value before split
-        y1: np.array, left true branch y value
-        y2: np.array, right false branch
+        Returns:
+            gini_index_gain: float, gini index gain after split
         """
+
         # Calculate gini index gain
         p = len(y1) / len(y)
         gini_index = gini(y)
@@ -266,23 +322,70 @@ class ClassificationTree(DecisionTree):
 
         return gini_index_gain
 
-    def _majority_vote(self, y):
+    def _leaf_value_calculation(self, y):
         """
-        calculate most frequency category in array like y for leaf node final value output
-        y: np.array, leaf node region y
+        Calculate most frequency category in array like y for leaf node final value output
+        Args:
+            y: array type dataset, leaf node region y
+
+        Returns:
+            most_common: int, most common label in that leaf
         """
+
         most_common = None
         max_count = 0
         for label in np.unique(y):
-            # Count number of occurences of samples with label
+            # Count number of occurrences of samples with label
             count = len(y[y == label])
             if count > max_count:
                 most_common = label
                 max_count = count
         return most_common
 
-    def fit(self, X, y):
-        """fit decision tree will call fit method in super class"""
-        self._impurity_calculation = self._calculate_gini_index_gain
-        self._leaf_value_calculation = self._majority_vote
-        super(RegressionTree, self).fit(X, y)
+
+class ClassificationID3Tree(DecisionTree, ABC):
+    """
+    Build classification ID3 tree, this is subclass of decision tree object
+    """
+
+    def _impurity_calculation(self, y, y1, y2):
+        """
+        ID3 classification tree try to minimum entropy on each subtree, after feature A threshold applied split
+        ID3 take most information gain feature threshold as best feature threshold. Here ID3 tree we build BST, but
+        in original paper it is N-search-tree.
+        Args:
+            y: array type dataset, original y value before split
+            y1: array type dataset, left true branch y value
+            y2: array type dataset, right false branch
+
+        Returns:
+            info_gain: float, information gain after split
+        """
+
+        # Calculate information gain
+        p = len(y1) / len(y)
+        entropy = calculate_entropy(y)
+        info_gain = entropy - p * calculate_entropy(y1) - (1 - p) * calculate_entropy(y2)
+
+        return info_gain
+
+    def _leaf_value_calculation(self, y):
+        """
+        Calculate most frequency category in array like y for leaf node final value output
+        Args:
+            y: array type dataset, leaf node region y
+
+        Returns:
+            most_common: int, most common label in that leaf
+        """
+
+        most_common = None
+        max_count = 0
+        for label in np.unique(y):
+            # Count number of occurrences of samples with label
+            count = len(y[y == label])
+            if count > max_count:
+                most_common = label
+                max_count = count
+        return most_common
+
