@@ -70,7 +70,7 @@ class DecisionTree:
         Returns:
             Customized impurity output
         """
-        pass
+        return NotImplementedError()
 
     @abstractmethod
     def _leaf_value_calculation(self, y):
@@ -82,7 +82,7 @@ class DecisionTree:
         Returns:
             Customized leaf value output
         """
-        pass
+        return NotImplementedError()
 
     def _loss(self):
         """
