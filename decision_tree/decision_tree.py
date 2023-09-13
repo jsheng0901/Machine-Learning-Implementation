@@ -84,14 +84,6 @@ class DecisionTree:
         """
         return NotImplementedError()
 
-    def _loss(self):
-        """
-        Loss function that is used for Gradient Boosting models to calculate impurity and negative gradient (residues)
-        Returns:
-            Customized loss (residues) output
-        """
-        pass
-
     def _build_tree(self, x, y, current_depth=0):
         """
         Recursive method which builds the decision tree and splits x and y together
