@@ -56,4 +56,4 @@ mse = mean_squared_error(y_test, y_pred)
 
 print(f"Running model took {end - start} seconds")
 print(f"Training date size is [{len(y)}, {len(X[0])}]")
-print(f"MSE is {accuracy}")
+print(f"MSE is {mse}")
