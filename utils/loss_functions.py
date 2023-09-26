@@ -57,12 +57,12 @@ class SquareLoss(Loss):
 
     def hess(self, y):
         """
-        Second order derivative of taylor expansion
+        Second order derivative of taylor expansion, output is constant 1
         Args:
             y: array type dataset (n_samples)
 
         Returns:
-            hess: float, square loss second order negative gradient value
+            hess: array type dataset (n_samples), each element is 1
         """
 
         hess = np.ones_like(y)
