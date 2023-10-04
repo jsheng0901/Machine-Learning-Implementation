@@ -55,11 +55,12 @@ class SquareLoss(Loss):
 
         return negative_gradient
 
-    def hess(self, y):
+    def hess(self, y, y_pred):
         """
         Second order derivative of taylor expansion, output is constant 1
         Args:
             y: array type dataset (n_samples)
+            y_pred: array type dataset (n_samples)
 
         Returns:
             hess: array type dataset (n_samples), each element is 1
@@ -119,10 +120,11 @@ class CrossEntropy(Loss):
 
         return negative_gradient
 
-    def hess(self, y_pred):
+    def hess(self, y, y_pred):
         """
         Second order derivative of taylor expansion, derive of gradient which is for y - p gradient.
         Args:
+            y: array type dataset (n_samples)
             y_pred: array type dataset (n_samples)
 
         Returns:
