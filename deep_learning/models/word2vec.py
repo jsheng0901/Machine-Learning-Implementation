@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 
 
-class word2vec:
+class Word2Vec:
     """
     skip-gram version word to vector
     n: int
@@ -16,6 +16,13 @@ class word2vec:
     """
 
     def __init__(self, n, learning_rate, epochs, window_size):
+        self.w2 = None
+        self.w1 = None
+        self.index_word = None
+        self.word_index = None
+        self.words_list = None
+        self.v_count = None
+
         self.n = n
         self.lr = learning_rate
         self.epochs = epochs
@@ -134,8 +141,8 @@ class word2vec:
 
         # loop through each epoch
         for i in range(self.epochs):
-            # Intialise loss to 0
-            self.loss = 0
+            # Initialise loss to 0
+            loss = 0
             # loop through each training sample
             # w_t = vector for target word, w_c = vectors for context words
             for w_t, w_c in training_data:
@@ -148,7 +155,7 @@ class word2vec:
                 # print("W2-before backprop", self.w2)	#
                 #########################################
 
-                # Calculate error, ex: [1, 9]
+                # Calculate error, this is know as dE/du, loss function derivative of output u, ex: [1, 9]
                 # formula: E/W = sum[1:c](y_pred - y_truth) * hidden_layer_output (h), first part is EI in here
                 # 1. For a target word, calculate difference between y_pred and each of the context words
                 # 2. Sum up the differences using np.sum to give us the error for this particular target word
@@ -166,20 +173,21 @@ class word2vec:
                 # print("W2-after backprop", self.w2)	#
                 #########################################
 
-                # Calculate loss
-                # formula: -sum[1, c](Uc) + c * log(sum[1, v](exp(u)), c is number of context, v is size of dictionary
-                # There are 2 parts to the loss function
-                # Part 1: sum of all u, this is u is context corresponding index, ex: context1: 1, context2: 2, u1 + u2
-                # Part 2: length of context words * log of sum for all elements (exponential) in the output layer before softmax (u)
-                # Note: word.index(1) returns the index in the context word vector with value 1
-                # Note: u[word.index(1)] returns the value of the output layer before softmax
-                self.loss += -np.sum([u[word.index(1)] for word in w_c]) + len(w_c) * np.log(np.sum(np.exp(u)))
+                # Calculate loss formula: -sum[1, c](Uc) + c * log(sum[1, v](exp(u)), c is number of context,
+                # v is size of dictionary There are 2 parts to the loss function
+                # Part 1: sum of all u, this is u is
+                # context corresponding index, ex: context1: 1, context2: 2, u[1] + u[2]
+                # Part 2: length of context
+                # words * log of sum for all elements (exponential) in the output layer before softmax (u) Note:
+                # word.index(1) returns the index in the context word vector with value 1 Note: u[word.index(1)]
+                # returns the value of the output layer before softmax
+                loss += -np.sum([u[word.index(1)] for word in w_c]) + len(w_c) * np.log(np.sum(np.exp(u)))
 
             #############################################################
             # Break if you want to see weights after first target word 	#
             # break 													#
             #############################################################
-            print('Epoch:', i, "Loss:", self.loss)
+            print('Epoch:', i, "Loss:", loss)
 
     def forward_pass(self, x):
         # no activation function for each matrix weight
@@ -198,9 +206,9 @@ class word2vec:
         # Column vector EI represents row-wise sum of prediction errors across each context word for the current target
         # Going backwards, we need to take derivative of E with respect of w2
         # h - shape 1x10, e - shape 1x9, dl_dw2 - shape 10x9 same as w2
-        # x - shape 1x9, w2 - 10x9, e.T - 9x1, dl_dw1 - shape 9x10
+        # x - shape 1x9, e - 1x9, w2.T - 9x10, dl_dw1 - shape 9x10
         dl_dw2 = np.outer(h, e)
-        dl_dw1 = np.outer(x, np.dot(self.w2, e.T))
+        dl_dw1 = np.outer(x, np.dot(e, self.w2.T))
         ########################################
         # print('Delta for w2', dl_dw2)			#
         # print('Hidden layer', h)				#
@@ -237,7 +245,7 @@ class word2vec:
 
             word = self.index_word[i]
             word_sim[word] = theta
-
+        # sort word_sim dict by theta descending
         words_sorted = sorted(word_sim.items(), key=lambda kv: kv[1], reverse=True)
 
         for word, sim in words_sorted[:top_n]:
