@@ -4,6 +4,7 @@
 - [中文讲解源论文深度解析LGB](https://blog.csdn.net/anshuai_aw1/article/details/83048709)
 - [中文详细讲解LGB与XGB的区别及例子解释](https://zhuanlan.zhihu.com/p/366952043)
 - [中文对比解释XGB与LGB的区别和相同点包含原理公式推导](https://zhuanlan.zhihu.com/p/87885678)
+- [中文原论文源码解析加分析](https://mp.weixin.qq.com/s/XxFHmxV4_iDq8ksFuZM02w)
 - [LGB官方文档以及各方面详细应用解释](https://lightgbm.readthedocs.io/en/stable/index.html)
 ### 优点
 - 对比XGB速度方面：
