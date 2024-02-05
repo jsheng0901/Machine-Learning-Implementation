@@ -38,3 +38,7 @@
 ### Engineer Work
 - 一般来说直接调用sklearn中的NB包来实现。实际生产中普通版本目前来说在(150, 4)的数据集上需要2ms左右在8cores/16Memory上。
 - 如需要再1M以上的数据跑production，推荐用spark的版本来实现。[参考例子](https://spark.apache.org/docs/latest/mllib-naive-bayes.html)
+
+### 面试问题总结
+1. 为什么朴素贝叶斯如此“朴素”？
+   - 因为它假定所有的特征在数据集中的作用是同样重要和独立的。这个假设现实中基本上不存在，但特征相关性很小的实际情况还是很多的，所以这个模型仍然能够工作得很好。
