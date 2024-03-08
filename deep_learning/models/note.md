@@ -30,7 +30,7 @@
   - optimizer，优化器的方式，每次反向传播后要更新此层的参数，不同的优化器采用不同的方式更新参数，具体参考优化器文档。
   - act_fn，需要注意的是word2vec并没有激活函数，影藏层和输出层都是存线性转换。
 - 其它要点 
-  - CBOW是一个词预测它上下文context_len范围的词，skip-gram是反过来，上下文context_len范围的词预测中间词。同样CBOW需要再影藏层后对每个预测词得出的h进行mean，而skip-gram则需要对输出层每个预测词的输出后的loss进行sum才是最终loss。
+  - Skip-gram是一个词预测它上下文context_len范围的词，CBOW是反过来，上下文context_len范围的词预测中间词。同样CBOW需要再影藏层后对每个预测词得出的h进行mean，而skip-gram则需要对输出层每个预测词的输出后的loss进行sum才是最终loss。
   - Word2Vec提出基于层次的softmax进行加速softmax的计算，因为softmax本身是指数级别的计算很费事，并且我们需要做的是V(词典大小)个class级别的分类问题。
   - Word2Vec同时提出另一种负采样的方式进行softmax的计算，此方式可以理解成，每次采样同一个比例的负样本作为softmax的分母，这样V(词典大小)个class级别的分类问题转换成K个class级别的分类问题，同时V >> K。
   - Skip-Gram的速度比CBOW慢一点，小数据集中对低频次的效果更好。因为Skip-Gram计算loss这一步更慢一些，小数据集中低频次的词和高频的词共享的context在Skip-Gram中影响不大，反过来CBOW因为高频词的context和低频词的context在小数据集上交集更多，则更容易受影响。大数据集的话交集不多无论高频低频，所以两种model的影响没那么明显。
