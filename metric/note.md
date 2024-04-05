@@ -6,6 +6,7 @@
 - [英文常见终于得metric总结](https://www.analyticsvidhya.com/blog/2019/08/11-important-model-evaluation-error-metrics/)
 - [中文解释AUC的含义](https://www.zhihu.com/question/39840928)
 - [英文解释多分类问题中的ROC-AUC如何计算](https://towardsdatascience.com/multiclass-classification-evaluation-with-roc-curves-and-roc-auc-294fd4617e3a)
+- [英文对比PR和ROC](https://machinelearningmastery.com/roc-curves-and-precision-recall-curves-for-classification-in-python/)
 #### 知识点提炼:
 1. Accuracy，准确率，100个样本有90个分类正确则为90%。但是当样本的label分类不均匀的时候并不推荐使用accuracy，100个样本，90个负样本，10个正样本，如果都predict为负，accuracy同样为90%当此时显然没有意义
 2. Precision，精准率，Precision = TP/(TP+FP)，简单说就是模型预测为positive的样本里面有多少预测对的。如果我们在意negative样本的预测准确度，那么我们不希望把negative的样本预测为positive，也就是说我们不希望FP高，因此此时我们更加关注precision的值。
@@ -17,6 +18,7 @@
    - micro，precision = TP1 + TP2 + TP3 / TP1 + TP2 + TP3 + FP1 + FP2 + FP3，算出每一个class的TP和FP然后合在一起计算，recall同理。
    - macro，precision = precision1 + precision2 + precision3 / 3，单独计算后，直接求所有class一起的平均值，recall同理。
    - weighted，precision = class1 number/total number * precision1 + class2 number/total number * precision2 + class3 number/total number * precision3，和macro一样，就是对每个class不再是同样的权重而是根据占比分配权重。
+8. 总结来说，PR curve 比 ROC curve 更适合于不平衡的二分类问题，前提是如果我们没有做任何平衡数据的预处理比如 down sampling。
 
 ### regression (回归)
 #### 参考链接：
