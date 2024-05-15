@@ -80,7 +80,7 @@ class KMeans:
             x: array type dataset (n_samples, n_features)
 
         Returns:
-
+            centroids: array type (k, n_features)
         """
         # initial centroids with [k, n_features] size
         n_features = np.shape(x)[1]

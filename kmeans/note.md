@@ -18,11 +18,13 @@
 - 对比GMM，KMeans每个数据点只属于唯一的一个聚类，而GMM基于后验概率进行了软分配，KMeans可以看成GMM的特殊情形。(没有估计聚类的协方差，只估计了聚类的均值)
 ### 知识点提炼
 - 对于数据需要先中心化一下，确保不同维度的数据在同一个scale下。
+- 如何初始化中心点，方法包括K-Means++，一般是默认的方式。或者自己多尝试几次多设置几个不同的初始点，从中选最优，也就是具有最小SSE值的那组作为最终聚类。
 - 如何选取K这里需要引入手肘法或者prior知识来确定。
 - 如何需要使用KMeans建议先remove异常点再聚类。
 - KMeans如果需要对categorical数据进行聚类，建议使用KModes。
 - KMeans如果需要对categorical和numerical数据同时进行聚类，建议使用KPrototype。
 - 相比KMeans，GMM收敛之前，经历了更多次的迭代，每次迭代需要计算更多的计算量，通常运行KMeans找到GMM的一个合适的初始值，接下来使用GMM进行调节。可以得到更好的聚类拟合。
+- 一般我们可以把KMeans先作为大范围的cluster模型，对数据进行第一层次的分类，因为KMeans比较快，并且大数据量下基本存在convex的pattern，之后再对每个小的cluster进行更复杂更适用于不同形状cluster的模型，比如HDBSCAN。
 - 普通版本的KMeans时间复杂度是O(i * k * n * d)，空间复杂度是O(kd -> centroids + nd -> 数据集)，i是重复的次数，k是cluster数量，n是多少个点，d是每个点的维度。当维度很大并且数据量很多的时候，会变得非常耗时。
 ### Engineer Work
 - 一般来说直接调用sklearn中的KMeans包来实现。实际生产中普通版本的KMeans目前来说在(100k, 10)的数据集上需要15分钟左右在8cores/16Memory上。可以使用GPU版本来加速，但本人没测试过目前。
