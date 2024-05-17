@@ -178,3 +178,18 @@ class GaussianMixtureModel:
         self.expectation(x)
 
         return self.sample_assignments
+
+    def predict(self, x):
+        """
+        Run GMM on new data and return the predict cluster indices
+        Args:
+            x: array type dataset (n_samples, n_features)
+
+        Returns:
+            sample_assignments: (n_sample), each point assigned label according to max likelihood in which cluster
+        """
+
+        # Use previous trained parameters for each cluster to make new assignments and return them
+        self.expectation(x)
+
+        return self.sample_assignments

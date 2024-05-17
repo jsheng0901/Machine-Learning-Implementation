@@ -9,7 +9,7 @@
 - 速度还可以对于10K，10维数据，每一轮EM需要从新计算所有点的likelihood比较耗时。
 - GMM模型参数很多，这取决与K个cluster的选择，模型的参数拟合能力可以达到不错的水平。
 - 相对KMeans可用于更复杂的数据分布处理，可以用多个高斯分布近似描述数据分布。
-- 相对KMeans考虑数据的variance当拟合模型的时候。
+- 相对KMeans考虑数据的variance当拟合模型的时候。话句话来说KMeans就是只考虑mean情况小的GMM，并且KMeans也是EM算法的逻辑。
 - 对比其它clustering模型，因为是概率生成式model，可以用于生成全新的数据，因为可以通过对多元高斯分布采样来生成新数据。
 ### 缺点
 - 需要手动设置参数n_cluster，和初始化mean covariance，初始化的covariance值会对结果产生比较大的影响。
