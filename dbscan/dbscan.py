@@ -22,12 +22,24 @@ class DBSCAN:
         self.min_samples = min_samples
 
     def _get_all_distance(self, X):
-        """ get pairwise distance matrix """
+        """
+        Get pairwise distance matrix
+        Args:
+            X: array type dataset (n_samples, n_features)
+        Returns:
+            distance_matrix: array type dataset (n_samples, n_samples)
+        """
         distance_matrix = pairwise_distances(X)
         return distance_matrix
 
     def get_center_points(self, X):
-        """ get all initial center points and each point neighbor points index"""
+        """
+        Get all initial center points and each point neighbor points index
+        Args:
+            X: array type dataset (n_samples, n_features)
+        Returns:
+            centers: dict (key: sample index, value: list of neighbors index)
+        """
         centers = {}
         n_samples = X.shape[0]
         distance_matrix = self._get_all_distance(X)
@@ -58,6 +70,7 @@ class DBSCAN:
         initial_centers = centers.copy()
 
         cluster_id = 0
+        # keep check overall sample visited or not
         unvisited = list(range(n_samples))
 
         # loop over all centers
@@ -103,6 +116,3 @@ class DBSCAN:
     def fit_predict(self, X):
         """ predict labels for input X """
         # TODO
-
-
-
