@@ -28,7 +28,7 @@ class PCA:
             x: array type dataset (n_samples, n_features)
 
         Returns:
-            None, generate components which is W from above formular as eigenvectors
+            None, generate components which is W from above formular as sorted and selected eigenvectors
             W -> (n_features, n_components)
         """
 
@@ -41,12 +41,15 @@ class PCA:
             # eigen method
             # get covariance matrix first cov -> [n_feature, n_feature]
             covariance_matrix = np.cov(x.T)
-            # eigenvectors -> [n_feature, n_feature], eigenvectors -> [n_feature,]
+            # eigenvalues -> [n_feature, n_feature], eigenvectors -> [n_feature,]
+            # for each eigenvector we have a corresponding eigenvalues
             eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
 
         # sort eigenvalues and pick top n_component
         sorted_eigenvalues_id = eigenvalues.argsort()[::-1]
+        # sort eigenvectors from corresponding max to min eigenvalues id
         eigenvectors = eigenvectors[:, sorted_eigenvalues_id]
+        # get n_components eigenvectors
         self.components = eigenvectors[:, :self.n_components]
 
         # get variance ratio based on top n_components
@@ -78,7 +81,7 @@ class PCA:
         # check if W already create or not
         if self.components is None:
             self.fit(x)
-
+        # (n_samples, n_features) * (n_features, n_components) -> (n_samples, n_components)
         x_trans = np.dot(x, self.components)
 
         return x_trans
