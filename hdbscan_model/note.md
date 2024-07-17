@@ -5,6 +5,7 @@
 - [聚类算法对比](https://scikit-learn.org/stable/modules/clustering.html)
 - [官方文档](https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html)
 - [最小生成树MST相关解释](https://zhuanlan.zhihu.com/p/34922624)
+- [英文对于密度类型的聚类算法的解释](https://pberba.github.io/stats/2020/01/17/hdbscan/)
 ### 优点
 - 对于任意形状大小的数据集都可以进行clustering。
 - 输出结果的cluster可以是任意形状。
