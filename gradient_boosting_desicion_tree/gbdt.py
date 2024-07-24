@@ -18,7 +18,7 @@ class GradientBoosting:
         The number of classification trees that are used.
     learning_rate: float
         The step length that will be taken when following the negative gradient during training.
-    min_samples_split: int （smaller than stop split)
+    min_samples_split: int (smaller than stop split)
         The minimum number of samples needed to make a split when building a tree.
     min_impurity: float    (smaller than stop split)
         The minimum impurity required to split the tree further.
