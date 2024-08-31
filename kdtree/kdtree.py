@@ -71,8 +71,8 @@ class KDTree:
         tree_node.split_value = median
         # assign left and right child node
         # start_split_index + 1 which means use next biggest variance feature to split dataset
-        tree_node.left = self.build(X[:median_index], start_split_index+1)
-        tree_node.right = self.build(X[median_index+1:], start_split_index+1)
+        tree_node.left = self.build(X[:median_index, :], start_split_index+1)
+        tree_node.right = self.build(X[median_index:, :], start_split_index+1)
 
         return tree_node
 
@@ -147,13 +147,3 @@ class KDTree:
 
         nearest_point, nearest_dist = self._nearest_neighbor_search(self.root, point)
         return nearest_point, nearest_dist
-
-
-
-
-
-
-
-
-
-

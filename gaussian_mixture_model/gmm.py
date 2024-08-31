@@ -42,9 +42,11 @@ class GaussianMixtureModel:
         n_samples = np.shape(x)[0]
         # initial priors as same weights P(Ck), then each class has same weight
         self.priors = (1 / self.k) * np.ones(self.k)
+        # calculate covariance matrix for whole sample
+        cov_matrix = calculate_covariance_matrix(x)
         for i in range(self.k):
             # random pick one x from sample as mean, and initial cov matrix same for each class k
-            params = {"mean": x[np.random.choice(range(n_samples))], "cov": calculate_covariance_matrix(x)}
+            params = {"mean": x[np.random.choice(range(n_samples))], "cov": cov_matrix}
             self.parameters.append(params)
 
     def multivariate_gaussian(self, x, params):
