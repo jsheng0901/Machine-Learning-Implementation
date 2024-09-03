@@ -380,4 +380,3 @@ class ClassificationID3Tree(DecisionTree, ABC):
                 most_common = label
                 max_count = count
         return most_common
-
