@@ -57,7 +57,7 @@ class LinearRegression:
             None, update self.param through gradient descant
         """
 
-        n_samples, n_features = x.shape
+        # n_samples, n_features = x.shape
         self.initialize_weights(x)
         # X = np.insert(X, 0, 1, axis=1)
         # y = np.reshape(y, (m_samples, 1))
@@ -73,8 +73,9 @@ class LinearRegression:
                 # calculate param gradient, [n, m] --> [m, n] * [n. ] --> [m, ]
                 param_gradient = x.T.dot(y_pred - y) + self.regularization.grad(self.param)
                 # update param by moving against
-                self.param -= self.learning_rate * param_gradient  # 更新权值w
+                self.param -= self.learning_rate * param_gradient
         else:
+            # x -> [n, m] y -> [n, ]
             # least square method
             # (X_T_X)^-1 * X_T * Y
             x = np.matrix(x)

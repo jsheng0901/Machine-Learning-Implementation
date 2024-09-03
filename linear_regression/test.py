@@ -5,7 +5,6 @@ from linear_regression import LinearRegression
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 
-
 # loading regression data
 data = datasets.load_diabetes()
 X = data.data
