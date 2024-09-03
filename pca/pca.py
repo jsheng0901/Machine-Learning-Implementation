@@ -41,7 +41,7 @@ class PCA:
             # eigen method
             # get covariance matrix first cov -> [n_feature, n_feature]
             covariance_matrix = np.cov(x.T)
-            # eigenvalues -> [n_feature, n_feature], eigenvectors -> [n_feature,]
+            # eigenvectors -> [n_feature, n_feature], eigenvalues -> [n_feature,]
             # for each eigenvector we have a corresponding eigenvalues
             eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
 

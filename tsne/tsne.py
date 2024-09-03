@@ -23,12 +23,13 @@ class Tsne:
     n_iter: int
         Maximum number of iterations for the optimization gradient descent.
     """
+
     def __init__(self, n_components: int = 2, perplexity: float = 30, learning_rate: float = 200, n_iter: int = 1000):
         self.n_components = n_components
         self.perplexity = perplexity
         self.learning_rate = learning_rate
         self.n_iter = n_iter
-        self.momentum = 0.9     # momentum control how previous gradient average influence current gradient
+        self.momentum = 0.9  # momentum control how previous gradient average influence current gradient
 
     def get_conditional_prob_matrix(self, distances, sigma, zero_index=None):
         """
@@ -119,7 +120,7 @@ class Tsne:
         Returns: float
             optimal sigma value through binary search
         """
-        guess_sigma = 10    # initial guess
+        guess_sigma = 10  # initial guess
         for i in range(max_iter):
             guess_sigma = (lower + upper) / 2
             perplexity = self.get_perplexity(distances, guess_sigma, zero_index)
