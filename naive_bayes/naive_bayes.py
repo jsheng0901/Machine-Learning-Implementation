@@ -8,7 +8,9 @@ class NaiveBayes:
     will usually be used for text data, preform not better than LR when data size keep increasing, really relay on prior
     -----------
     """
+
     def __init__(self):
+        # init class and each class each feature parameter
         self.classes = None
         self.parameters = []
 
@@ -35,11 +37,13 @@ class NaiveBayes:
         for i, c in enumerate(self.classes):
             # Only select the rows where the label equals the given class
             x_where_c = x[np.where(y == c)]
-            self.parameters.append([])
+            # init each feature parameters list
+            feature_parameters_list = []
             # Add the mean and variance for each feature (column)
             for col in x_where_c.T:
                 parameters = {"mean": col.mean(), "var": col.var()}
-                self.parameters[i].append(parameters)
+                feature_parameters_list.append(parameters)
+            self.parameters.append(feature_parameters_list)
 
     def calculate_likelihood(self, mean, var, x):
         """
@@ -123,6 +127,6 @@ class NaiveBayes:
             y_pred: array type dataset (n_sample), each sample final label
         """
 
-        y_pred = [self.classify(sample) for sample in x]    # loop through each sample
+        y_pred = [self.classify(sample) for sample in x]  # loop through each sample
 
         return y_pred
