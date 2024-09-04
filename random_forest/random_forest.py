@@ -38,7 +38,7 @@ class RandomForest:
         self.tree_features = []
         # build forest base on input single tree object
         for _ in range(self.n_estimators):
-            self.trees.append(tree)
+            self.trees.append(self.tree)
 
     def get_bootstrap_data(self, x, y):
         """
@@ -97,6 +97,7 @@ class RandomForest:
         elif self.max_features is None:
             self.max_features = n_features
 
+        # here we do sequential, but actually this step can be parallel
         for i in tqdm(range(self.n_estimators)):
             # get random train and label subset
             sub_x, sub_y = sub_sets[i]
