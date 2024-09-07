@@ -15,9 +15,9 @@
 5. ROC 曲线，TPR = TP/(TP+FN)，FPR = FP/(TN+FP)，x轴 - FPR，y轴 - TPR。TPR就是recall，而FPR是实际为negative的样本我们有多少个预测准确。此时我们希望的是TN更大，而FP更小，也就是FPR越小越好。
 6. AUC，ROC曲线下面积，范围在[0, 1]，AUC=1意味着你有一个完美的模型，但一般不太可能，AUC=0表示模型非常差(或非常好！)。可以尝试反转预测的概率。AUC=0.5意味着预测是随机的。对于任何二分类问题，如果预测所有目标为0.5，将得到0.5的AUC。AUC的含义：例如AUC=0.85，表示随机从正样本选择一个样本然后随机从负样本选择一个样本，正样本的预测概率大于负样本的预测概率的可能性为0.85。AUC是对所有可能的分类阈值的效果进行综合衡量，一种解读方式是看作模型将某个随机正类别样本排列在某个随机负类别样本之上的概率。ROC和AUC可以用来选择阈值，一般来说越大的AUC越好对应选择的阈值。或者当我们更加关心positive样本的时候同一个FPR下TPR越高越好。一般情况下我们用来对比model的performance，而不是单一看具体某个threshold的model下的情况。
 7. 多分类的precision和recall，先计算每一个label的precision和recall，每一个label的计算是把当前class当做1，其它class当做0，比如有三个class，y_true = [1, 2, 3]，y_pred = [1, 1, 3]，则对于class1 我们有 y_true = [1, 0, 0]，y_pred = [1, 1, 0] precision = 1/2。其它同理，具体有一下几种算总precision和recall的方法：
-   - micro，precision = TP1 + TP2 + TP3 / TP1 + TP2 + TP3 + FP1 + FP2 + FP3，算出每一个class的TP和FP然后合在一起计算，recall同理。
-   - macro，precision = precision1 + precision2 + precision3 / 3，单独计算后，直接求所有class一起的平均值，recall同理。
-   - weighted，precision = class1 number/total number * precision1 + class2 number/total number * precision2 + class3 number/total number * precision3，和macro一样，就是对每个class不再是同样的权重而是根据占比分配权重。
+   - micro，precision = (TP1 + TP2 + TP3) / (TP1 + TP2 + TP3 + FP1 + FP2 + FP3)，算出每一个class的TP和FP然后合在一起计算，recall同理。
+   - macro，precision = (precision1 + precision2 + precision3) / 3，单独计算后，直接求所有class一起的平均值，recall同理。
+   - weighted，precision = (class1 number/total number) * precision1 + (class2 number/total number) * precision2 + (class3 number/total number) * precision3，和macro一样，就是对每个class不再是同样的权重而是根据占比分配权重。
 8. 总结来说，PR curve 比 ROC curve 更适合于不平衡的二分类问题，前提是如果我们没有做任何平衡数据的预处理比如 down sampling。
 
 ### regression (回归)
