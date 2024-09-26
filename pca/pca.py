@@ -81,7 +81,7 @@ class PCA:
         # check if W already create or not
         if self.components is None:
             self.fit(x)
-        # (n_samples, n_features) * (n_features, n_components) -> (n_samples, n_components)
+        # [n_samples, n_features] * [n_features, n_components] -> [n_samples, n_components]
         x_trans = np.dot(x, self.components)
 
         return x_trans
