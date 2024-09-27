@@ -13,11 +13,23 @@ class LogisticRegression:
         training.
     n_iterations: int
         Max iteration times for gradient descent
+    gamma : float
+        The regularization weight. Larger values correspond to larger regularization penalties,
+        and a value of 0 indicates no penalty.
+    regularization: object or None
+        L1 regularization or L2 regularization or None.
     """
-    def __init__(self, learning_rate=.1, n_iterations=4000):
+    def __init__(self, learning_rate=.1, n_iterations=4000, gamma=0.001, regularization=None):
         self.learning_rate = learning_rate
         self.n_iterations = n_iterations
+        self.gamma = gamma
         self.param = None
+
+        if regularization is None:
+            self.regularization = lambda x: 0
+            self.regularization.grad = lambda x: 0
+        else:
+            self.regularization = regularization()
 
     def initialize_parameters(self, x):
         """
@@ -55,7 +67,8 @@ class LogisticRegression:
             y_pred = sigmoid(x.dot(self.param))
             # Move against the gradient of the loss function with
             # respect to the parameters to minimize the loss
-            param_gradient = x.T.dot(y_pred - y)    # [n, m] --> [m, n] * [n. ] --> [m, ]
+            # [n, m] --> [m, n] * [n, ] + [m, ] --> [m, ]
+            param_gradient = x.T.dot(y_pred - y) + self.regularization.grad(self.gamma, self.param)
             self.param -= self.learning_rate * param_gradient
 
     def predict(self, x):

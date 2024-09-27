@@ -3,6 +3,7 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from logistic_regression import LogisticRegression
+from utils.regularization import Ridge
 
 # loading data
 data = datasets.load_iris()
@@ -12,7 +13,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 # build mode
 start = datetime.datetime.now()
-model = LogisticRegression()
+model = LogisticRegression(regularization=Ridge)
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 end = datetime.datetime.now()

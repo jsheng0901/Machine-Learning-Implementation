@@ -12,24 +12,28 @@ class LinearRegression:
         The step length that will be taken when following the negative gradient during training.
     n_iterations: int
         Max iteration times for gradient descent.
+    gamma : float
+        The regularization weight. Larger values correspond to larger regularization penalties,
+        and a value of 0 indicates no penalty.
     regularization: object or None
         L1 regularization or L2 regularization or None.
     gradient: bool
         Use gradient descent optimization method or least square method. Only support gradient descent when apply l1/l2.
     """
 
-    def __init__(self, n_iterations=3000, learning_rate=0.00005, regularization=None, gradient=True):
+    def __init__(self, n_iterations=3000, learning_rate=0.00005, gamma=0.001, regularization=None, gradient=True):
 
         self.n_iterations = n_iterations
         self.learning_rate = learning_rate
         self.gradient = gradient
+        self.gamma = gamma
         self.param = None
 
         if regularization is None:
             self.regularization = lambda x: 0
             self.regularization.grad = lambda x: 0
         else:
-            self.regularization = regularization
+            self.regularization = regularization()
 
     def initialize_weights(self, x):
         """
@@ -70,8 +74,8 @@ class LinearRegression:
                 # calculate the loss
                 # loss = np.mean(0.5 * (y_pred - y) ** 2) + self.regularization(self.w)
                 # self.training_errors.append(loss)
-                # calculate param gradient, [n, m] --> [m, n] * [n. ] --> [m, ]
-                param_gradient = x.T.dot(y_pred - y) + self.regularization.grad(self.param)
+                # calculate param gradient, [n, m] --> [m, n] * [n, ] + [m, ] --> [m, ]
+                param_gradient = x.T.dot(y_pred - y) + self.regularization.grad(self.gamma, self.param)
                 # update param by moving against
                 self.param -= self.learning_rate * param_gradient
         else:

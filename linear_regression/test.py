@@ -4,6 +4,7 @@ from sklearn.metrics import mean_squared_error
 from linear_regression import LinearRegression
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
+from utils.regularization import Ridge
 
 # loading regression data
 data = datasets.load_diabetes()
@@ -13,7 +14,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
 # build mode
 start = datetime.datetime.now()
-model = LinearRegression()
+model = LinearRegression(regularization=Ridge)
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 end = datetime.datetime.now()
