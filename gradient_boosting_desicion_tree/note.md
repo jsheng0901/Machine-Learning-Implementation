@@ -49,7 +49,7 @@
 - 其它要点 
   - 子采样，借用bootstrap的思想，每一轮训练时只使用一部分样本，不同点是这里的采样是无放回抽样，这个方法被称为Stochastic Gradient Boosting。对于单棵树来说，只使用一部分样本拟合会增加单棵树的偏差和方差，然而subsampling会使树与树之间的相关性减少，从而降低模型的整体方差，很多时候会提高准确性。subsampling的另一个好处是因为只使用一部分样本进行训练，所以能显著降低计算开销。
   - 大部分单一树的要点可以参考decision tree里面的note。
-  - 总的来说，对于GBDT build的时间复杂度一般是O(m * n * log(n) * n_estimators)，predict的时间复杂度是O(log(n) * n_estimators)，m是feature个数，n是样本个数，也就是每科单一树的时间乘以总共几棵树。
+  - 总的来说，对于GBDT build的时间复杂度一般是O(m * n * log(n) * depth * n_estimators)，predict的时间复杂度是O(log(n) * n_estimators)，m是feature个数，n是样本个数，也就是每科单一树的时间乘以总共几棵树。
   - GBDT对比RF：
     - 1）集成的方式：随机森林属于Bagging思想，而GBDT是Boosting思想。
     - 2）偏差-方差权衡：RF不断地降低模型的方差，而GBDT不断地降低模型的偏差。
@@ -63,3 +63,9 @@
 - 一般来说直接调用sklearn中的GBDT包来实现。实际生产中普通版本目前来说在(150, 4)的数据集上每棵树拟合需要6s左右在8cores/16Memory上。
 - 如需要再1M以上的数据跑production，一般不推荐此算法，model会变的很容易让整串树build的很长很复杂并且很慢，容易导致过拟合。推荐升级版的集成学习比如XGB/LGB。
 - 如果需要一定跑大数据，推荐参考spark版本的regression和classification。[参考link](https://spark.apache.org/docs/latest/ml-classification-regression.html)
+
+
+### 面试问题总结
+1. 残差 = 真实值 - 预测值，明明可以很方便地计算出来，为什么GBDT的残差要用用负梯度来代替？为什么要引入麻烦的梯度？有什么用呢？
+   - 在GBDT中，无论损失函数是什么形式，每个决策树拟合的都是负梯度。准确的说，不是用负梯度代替残差，而是当损失函数是均方损失时，负梯度刚好是残差，残差只是特例。
+   - GBDT的求解过程就是梯度下降在函数空间中的优化过程。在函数空间中优化，每次得到增量函数，这个函数就是GBDT中一个个决策树，负梯度会拟合这个函数。要得到最终的GBDT模型，只需要把初始值或者初始的函数加上每次的增量即可。详细推理过程可以参考[链接](https://mp.weixin.qq.com/s/Ods1PHhYyjkRA8bS16OfCg)
