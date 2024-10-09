@@ -22,6 +22,6 @@
 ### 知识点提炼
 - 一般来说数据集是稠密并且不是凸的时候，用HDBSCAN比KMeans更好。
 - 参数选择上min_cluster_size large size will result as small number of clusters and more compact cluster shape。
-- 参数选择上min_samples large value will cause data push away and more data consider as noise。因为这里的参数是k值，主要影响核心距离的定义，对于MRD距离都会被放大，这样更多的样本被分配到稀疏区域，原本密集的区域也将变的稀疏，所有更多的点会被归为noise。
+- 参数选择上min_samples large value will cause data push away and more data consider as noise。因为这里的参数是k值，主要影响核心距离的定义，更大的设置会使MRD距离都会被放大，这样更多的样本被分配到稀疏区域，原本密集的区域也将变的稀疏，所有更多的点会被归为noise。
 ### Engineer Work
 - 工程上一般可以适用于1M以上的数据集，主要耗时间体现在构建mutual reachability distance matrix (用KDtree加速neighbor搜索)，min spanning tree(用Prim算法加速构建)然后single linkage tree(用UnionFind实现)。
