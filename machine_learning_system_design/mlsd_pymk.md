@@ -54,6 +54,7 @@ Recommend a list of users that you may want to connect with
   - GNN model: binary classification:
     - ROC-AUC, use as parameters turning
     - Precision-recall, FN is more importance than FP, thus recall is more importance.
+    - mAP for rank problem.
   - Recommendation system: binary relationships -> MAP
   
 * Online 
@@ -116,8 +117,8 @@ Recommend a list of users that you may want to connect with
   - Graph information: 
     - User-user connections: 
       - Connection: IDs(user1, user2), connection type, timestamp, location 
-      - Eduction and work affinity: major similarity, companies in common, industry similarity, etc 
-      - Social affinity: number mutual connections, profile visits (The number of times a user looks at the profile of another user), time discounted mutual connections
+      - Eduction and work affinity: major similarity, companies in common, industry similarity, overlapping years at school increases the likelihood of two users connecting, etc.
+      - Social affinity: number mutual connections, profile visits (The number of times a user looks at the profile of another user), time discounted mutual connections (This feature weighs mutual connections by how long they have existed, the longer means use has decided not to connect.)
   
     - User-user interactions:  
       - IDs(user1, user2), interaction type, timestamp, location
@@ -201,7 +202,7 @@ Recommend a list of users that you may want to connect with
   - Dataset 
     - create a snapshot at time t
     - compute node and edge features 
-    - create labels using snapshot at t + 1 (if connection formed, positive) 
+    - create labels using snapshot at t + 1 (if connection at t + 1 formed, positive, else negative. Need create negative label each epoch for prevent overfitting).
   - Model eval and HP tuning 
   - Iterations 
 
@@ -217,13 +218,13 @@ Recommend a list of users that you may want to connect with
 
 * Prediction pipeline 
   - Candidate generation 
-    - Friends of Friends (FoF) - rule based - from 1B to 1K.1K = 1M candidates -> FoF service.
+    - Friends of Friends (FoF) - rule based - from 1B to 1K * 1K (as mention before each user has 1K connections) = 1M candidates -> FoF service.
   - Candidate feature generation by run exactly same feature engineering pipeline when training. 
   - Scoring service by using GNN model -> embeddings -> similarity scores.
   - Generate top k friends by sorting score.
 * Batch vs Online prediction
   - Do batch prediction. Pre-compute PYMK tables for each / active users and store in cloud DB.
-  - As the social graph in PYMK does not evolve quickly, the pre-computed recommendations remain relevant for an extended period.
+  - As the social graph in PYMK does not evolve quickly, the pre-computed recommendations remain relevant for an extended period like one week.
   - Update active users feature table since user behavior in graph may change frequently.
 * Note: re-rank based on business logic.
   
