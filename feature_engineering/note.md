@@ -93,6 +93,12 @@
          - 直接 one-hot
        - 多于10个但是少于100个之类的，比如week，device
          - 分桶后进行 one-hot
+   - 文本类
+     - 句子或者更长的文章
+       - 用预训练好的LLM，比如BERT来进行embedding
+     - 几个关键词或者词组
+       - TF-IDF
+       - Word2Vec
 
 
 ## feature selection (特征选择)
