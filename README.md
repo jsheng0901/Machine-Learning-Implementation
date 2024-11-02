@@ -1,3 +1,3 @@
 # Machine-Learning-Implementation
-### This is machine learning algorithm implementation from scratch. 
-### For review and better understand. 
+### This repo contains machine learning algorithm implementation from scratch and some basic ml knowledge. 
+### The purpose of this repo includes ml review and better understand. 
