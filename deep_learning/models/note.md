@@ -40,7 +40,7 @@
   - context_len参数，一般来说Skip-Gram一般10左右，CBOW一般为5左右。
   - Word2Vec总共参数个数由两层MLP参数控制，参数数量 = 2 * (词向量的维度 * 词典长度)。
   - 词向量维度代表了词语的特征，特征越多能够更准确的将词与词区分。但是在实际应用中维度太多训练出来的模型会越大，虽然维度越多能够更好区分，但是词与词之间的关系也就会被淡化，这与我们训练词向量的目的是相反的，我们训练词向量是希望能够通过统计来找出词与词之间的联系，维度太高了会淡化词之间的关系，但是维度太低了又不能将词区分，所以词向量的维度选择依赖于实际应用场景。一般说来200-400维是比较常见的。
-  - 现如今提取词向量对于复杂的语句情况，我们已经不再使用Word2Vec的得出词的embedding，更多的采用更加复杂的Transformer来提取词的embedding，而且一般embedding直接作为输入层的第一层及input之后，直接转化成统一维度后再进入encoder层提取信息。
+  - 现如今提取词向量对于复杂的语句情况，我们已经不再使用Word2Vec的得出词的embedding，更多的采用更加复杂的Transformer来提取词的embedding，而且一般embedding直接作为输入层的第一层及input之后，直接转化成统一维度后再进入encoder层提取信息。不过对于一些静态短词组特征的embedding，比如tag，我们一般还是用Word2Vec更快速的转化成向量数组。
   - <mark>TODO: Hierarchical Softmax和Negative Sampling的细节有待更新。</mark>
 ### Engineer Work
 - 实际工作中可以调用gensim，或者Spacy包自带的model。或者用pytorch里面的embedding层自己搭建一个model。
@@ -98,10 +98,11 @@
   - 使用Q/K/V不相同的权重矩阵生成，可以保证在不同空间进行投影，增强了表达能力，提高了泛化能力。线性变换的好处：在 Q * K^T 部分，线性变换矩阵将KQ投影到了不同的空间，增加了表达能力（这一原理可以同理SVM中的核函数-将向量映射到高维空间以解决非线性问题），这样计算得到的注意力矩阵的泛化能力更高。
   - self-attention的部分是计算量最大的部分，ex: 1 batch，12 heads，length 256，d_k 64，则 Q * K^T -> score 有 [256, 64] * [64, 256] -> 256 * 64 * 256 次计算，score * V 有 [256, 256] * [256, 64] -> 256 * 256 * 64 次计算，所以总共有 12 * （256 * 64 * 256 + 256 * 256 * 64）= 1亿次乘法。总的来说对于每个头时间复杂度是 1. 算score: length^2 * d_k + 2. 算softmax: length^2 + 3. 算score * v: length^2 * d_k。不过每个头是并行运算。
 ### Engineer Work
-- 实际工作中可以调用pytorch里面的nn.Transformer来直接实现src，tgt的训练。
+- 实际工作中可以调用pytorch里面的nn.Transformer来直接实现src，tgt的训练。或者使用hugging face的API。
 
 
 ## 面试问题总结
+### Word2Vec 系列
 1. Word2Vec有哪两种模型，各自的计算过程中损失函数是什么，优缺点是什么？
    - CBOW，context词预测中心词的思路。以下图展示计算过程。![CBOW](/pics/w2v_CBOW.png)
    - Skip-gram，与CBOW相反，中心词预测context词。以下图展示计算过程。![skip-gram](/pics/w2v_skip_gram.png)
@@ -111,40 +112,80 @@
    - 负采样。原本需要输出v个类别的softmax，转化成输出k + 1个类别的softmax，k为负样本的个数。
    - <mark>TODO: 具体数学推导细节有待更新。</mark>
 3. Word2Vec的缺点。
-   - 不能解决一词多义的embedding信息。
-   - 没有考虑全局信息。
-   - 没有考虑词在句子里面出现的顺序。
-   - 没有正则化处理参数防止过拟合。
-   - 对于新的词没有出现过的词效果不好。准确说是不能处理没出现的词，找不到词的index在embedding里面。
+    - 不能解决一词多义的embedding信息。
+    - 没有考虑全局信息。
+    - 没有考虑词在句子里面出现的顺序。
+    - 没有正则化处理参数防止过拟合。
+    - 对于新的词没有出现过的词效果不好。准确说是不能处理没出现的词，找不到词的index在embedding里面。
 4. Word2Vec输入输出是什么？隐藏层的激活函数是什么？输出层的激活函数是什么？
-   - 输入：每个词的one-hot embedding，大小为 [N, V]，N -> batch size，V -> dictionary size。
-   - 输出：输出层softmax后的结果，大小同样为 [N, V]，其中每个样本对应softmax最大值的index就是我们预测的那个词的index。
-   - 隐藏层没有激活函数，或者说只有线性激活函数，因为word2vec不是为了做语言模型，它不需要预测得更准，线性激活会让模型收敛更快并且更简单。
-   - 输出层的激活函数是softmax，为了爆炸输出是符合概率分布的结果。
+    - 输入：每个词的one-hot embedding，大小为 [N, V]，N -> batch size，V -> dictionary size。
+    - 输出：输出层softmax后的结果，大小同样为 [N, V]，其中每个样本对应softmax最大值的index就是我们预测的那个词的index。
+    - 隐藏层没有激活函数，或者说只有线性激活函数，因为word2vec不是为了做语言模型，它不需要预测得更准，线性激活会让模型收敛更快并且更简单。
+    - 输出层的激活函数是softmax，为了爆炸输出是符合概率分布的结果。
 5. Word2Vec如何获取词向量？
-   - 影藏层的参数W就是最终我们要的embedding向量。大小为 [N, E]，N -> batch size，E -> embedding size。
+    - 影藏层的参数W就是最终我们要的embedding向量。大小为 [N, E]，N -> batch size，E -> embedding size。
 6. 推导一下Word2Vec参数如何更新？
-   - <mark>TODO: 具体数学推导细节有待更新。</mark>
+    - <mark>TODO: 具体数学推导细节有待更新。</mark>
 7. Word2Vec和隐狄利克雷模型(LDA)有什么区别与联系？
-   - <mark>TODO: 待补充。</mark>
+    - <mark>TODO: 待补充。</mark>
 8. Word2vec和Tf-idf在相似度计算时的区别？
-   - Word2vec是稠密的向量，而 tf-idf 则是稀疏的向量。
-   - Word2vec的向量可以表达语义信息，但是 tf-idf 的向量不可以。
-9. Transformer为何使用多头注意力机制？（为什么不使用一个头）
+    - Word2vec是稠密的向量，而 tf-idf 则是稀疏的向量。
+    - Word2vec的向量可以表达语义信息，但是 tf-idf 的向量不可以。
+
+### Transformer 系列
+1. Transformer为何使用多头注意力机制？（为什么不使用一个头）
    - 简单回答就是，多头保证了transformer可以注意到不同子空间的信息，捕捉到更加丰富的特征信息。
    - 同时多头会解决模型在对当前位置的信息进行编码时，会过度的将注意力集中于自身位置的问题。
    - 参考[链接](https://www.zhihu.com/question/341222779)
-10. Transformer为什么Q和K使用不同的权重矩阵生成，为何不能使用同一个值进行自身的点乘？
+2. Transformer为什么Q和K使用不同的权重矩阵生成，为何不能使用同一个值进行自身的点乘？
     - 使用Q/K/V不相同可以保证在不同空间进行投影，增强了表达能力，提高了泛化能力。
     - K和Q的点乘是为了得到一个attention score 矩阵，原本V里的各个单词只用word embedding表示，相互之间没什么关系。但是经过与attention score相乘后，V中每个token的向量（即一个单词的word embedding向量），在300维的每个维度上（每一列）上，都会对其他token做出调整（关注度不同）。与V相乘这一步，相当于提纯，让每个单词关注该关注的部分。K和Q使用了不同的W_k, W_Q来计算，可以理解为是在不同空间上的投影。正因为有了这种不同空间的投影，增加了表达能力，这样计算得到的attention score矩阵的泛化能力更高。因为K和Q使用了不同的W_k, W_Q来计算，得到的也是两个完全不同的矩阵，所以表达能力更强。但是如果不用Q，直接拿K和K点乘的话，attention score 矩阵是一个对称矩阵。因为是同样一个矩阵，都投影到了同样一个空间，所以泛化能力很差。这样的矩阵导致对V进行提纯的时候，效果也不会好。
     - 参考[链接](https://www.zhihu.com/question/319339652)
-11. 为什么在进行softmax之前需要对attention进行scaled（为什么除以dk的平方根），并使用公式推导进行讲解。
+3. 为什么在进行softmax之前需要对attention进行scaled（为什么除以dk的平方根），并使用公式推导进行讲解。
     - 总结来说就是稳定参数的分布，归一化效果，保证softmax的时候不会容易遇到极值导致梯度消失。
     - 参考[链接](https://www.zhihu.com/question/339723385)
-12. 在计算attention score的时候如何对padding做mask操作？
+4. 在计算attention score的时候如何对padding做mask操作？
     - padding位置置为负无穷(一般来说-1000就可以)，和self target attention里面的方法几乎一样。
-13. Transformer对比RNN/LSTM有什么优势？
+5. Transformer对比RNN/LSTM有什么优势？
     - RNN并行计算能力差，RNN是sequence by sequence的，后一个一定要等前一个计算完。
     - Transformer特征抽取能力比RNN强。
-14. Transformer是如何训练的？测试阶段如何进行测试呢？
+6. Transformer是如何训练的？测试阶段如何进行测试呢？
     - 训练和测试唯一不同的地方是decoder，训练的时候通过mask操作来完成self target attention，但是在inference的时候，没有ground truth，所以需要拿y^_t-1作为当期的输入。
+7. Transformer内是否有相互share的weight矩阵?
+    - 输入层的embedding和最后一层线性层的权重是相互share的，linear层 -> [n_embd, vocab_size]，embedding层 -> [vocab_size, n_embd]。
+    - 第一，本质上这两层干的事情是一样的，embedding是把词变成dense向量，linear层是把最终的输出变回一样的dense向量，共享同样的权重矩阵可以更好的捕捉词意。
+    - 第二，这一层大概占据最小号的模型30%的参数，也就是说共享权重矩阵可以省去30%的参数，这样可以减少参数量加上训练。
+
+### GPT 系列
+1. GPT在inference阶段生成新的下一个单词的时候是怎么生成的，为什么？
+   - GPT在inference时候生成下一个单词的时候，用的是前一个词的结果并且concat之前所有词一起作为输入房间model，比如 input: [1, 1] 代表batch = 1, length = 1。第一个输入词。
+   - model输出为下一个词在整个字典中的每个词的预测logits，需要自行softmax后，再从multinomial distribution里面根据之前计算出来的每个词的概率权重，抽取一个词作为下一个预测的新词。
+   - 本质上是控制文本生成的多样性和随机性，这里有两种普遍的做法，一种是温度缩放，一种是Top-k采样。
+     - 先区别一下概率采样和argmax，传统意义上我们使用argmax选择概率最大的作为下一个词，但是为了实现概率采样我们可以使用multinomial distribution来替代argmax，这样下一个词会根据概率分布比例进行生成下一个词。此时虽然大部分情况和argmax的输出是一样的，但是也有概率选择概率值不是最大的那个token作为生成的词。这样就实现了生成文本的多样性。当然也有概率生成一些毫无逻辑的词。
+     - 温度缩放，本质上是对概率缩放的程度控制。温度缩放的公式，scaled_logits = logits / temperate。其实就是对输出进行等比例变化。
+       - 小于1的温度，会使分布更加shape，使得最可能也就是概率最大的那个数的值变的概率更大，这样multinomial distribution进行采样的时候更加可能的选择最大值对应的词。
+       - 等于1的温度，没有任何缩放，等价于不缩放，直接使用原始计算出来的概率分布进行multinomial distribution采样。
+       - 大于1的温度，会使分布更加均匀，这样其它词被选中的概率增加，生成的文本添加更多变化。当然也会有更大概率输出一些毫无意义的词。
+     - Top-k采样，我们可以只关注logits值最大的k个词，比如k=4，此时我们把其它词的logits进行mask掉，和训练过程中的mask技巧一样，然后再进行softmax，得到其它token的概率为0，四个最大值的词对应的概率值。之后再进行温度缩放方式的multinomial distribution采样，以在这些非零数值中选择下一个预测词。Top-k只关注选中的范围内的词，从而避免一些毫无意义的词的预测输出。
+
+
+### Tokenization 系列
+1. 为什么不能直接用Unicode来实现tokenization?
+   - 如果直接用Unicode来实现的话，那么这个字典会很大，基本上在15k左右，这样做后续的softmax很慢，并且对于长句子或者篇章级别的输入，embedding后会变得非常长，导致模型效果不好。
+   - Unicode会一直在变动，不稳定，这样每次token后的结果会不一样。
+2. 为什么在regex token的时候需要一些pattern来定义如何split？
+   - 保证一些连续有意义的词被split开，比如单词和数字，ex: "word123" -> "word", "_123"，这样后续的BPE token的merge不会出现奇怪的组合。
+   - 保证一下没有意义的划分不会出现，比如单词和空格，ex: "hello word" -> "hello", "_word"，这样后续的BPE token不会出现 "o_"这种奇怪的token。
+   - 保证一些标点符号的划分，比如一句话最后一个单词和标点符号，ex: "you!!!?" -> "you", "!!!?"。
+   - 更多的划分参考官方[link](https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py)
+3. 为什么需要special token？
+   - 在GPT2里面我们的vocabulary大小有50257，256来raw bytes token，50000来着BPE token里面的merged token，另外一个是special token '<|endoftext|>'
+   - special token存在的意义是比如让model知道可以停止生成文章了。或者还有其它special token表示可以开始生成文章了。
+4. 为什么需要BPE token，并简单描述一下BPE token的过程？
+   - 简单来说是因为，如果不用压缩merge字符的形式处理的话，如果只用character level的形式进行token的话，每个句子tokenizer后太长了，并且token之间毫无意义，对于模型学习收敛和performance并不友好。
+   - 直觉上来说，常出现的配对的字符应该被合并在一起传给model去学习。这样可以提供更多的语义相比较字符level的tokenizer。
+   - BPE的过程可以简单概述为：
+     - 先把输入的句子的每个单词转化成utf-8 char，然后转化成list of int。
+     - 按照相邻两两配对的形式进行计算出现的词频
+     - 把最高出现词频的两个词进行merge，并用一个新的token index代替句子内所有的出现的这两个词。
+     - 记录下来merge的词和记录配对结果进vocabulary，重复上面 2 - 4步骤，直到达到vocabulary的上线
